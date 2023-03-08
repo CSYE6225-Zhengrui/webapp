@@ -1,6 +1,9 @@
 package com.csye6225.productmanager.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
@@ -8,6 +11,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.sql.Timestamp;
 
+@JsonIgnoreProperties({"owner_user"})
 @Entity
 @Table(name = "product")
 public class Product {
@@ -34,12 +38,34 @@ public class Product {
     @Column(name = "date_added", updatable = false, columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     @CreationTimestamp
     private Timestamp date_added;
-    @Column(name = "date_last_updated", updatable = true, columnDefinition="timestamp default current_timestamp on update current_timestamp")
+
+    // @Column(name = "date_last_updated", nullable = true, updatable = true, columnDefinition="on update current_timestamp")
     @UpdateTimestamp
+    @Column(name = "date_last_updated")
     private Timestamp date_last_updated;
 
     @Column(name = "owner_user_id")
-    private Integer owner_user_id;
+    private Integer ownerUserId;
+
+
+    @ManyToOne
+    @JoinColumn(name = "owner_user", nullable = false, updatable = false)
+    private User user;
+
+    public Integer getOwnerUserId() {
+        return ownerUserId;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+        this.ownerUserId = user.getId();
+    }
+
+
 
     public Product() {
     }
@@ -108,11 +134,4 @@ public class Product {
         this.date_last_updated = date_last_updated;
     }
 
-    public Integer getOwner_user_id() {
-        return owner_user_id;
-    }
-
-    public void setOwner_user_id(Integer owner_user_id) {
-        this.owner_user_id = owner_user_id;
-    }
 }
