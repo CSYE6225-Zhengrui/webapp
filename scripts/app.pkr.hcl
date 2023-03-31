@@ -67,49 +67,45 @@ build {
       "CHECKPOINT_DISABLE=1"
     ]
 
-
     inline = [
       "sudo yum update -y",
       "yes | sudo yum install java-1.8.0-openjdk",
-#      "yes | sudo yum install maven",
-#      "sudo yum install -y mariadb-server",
-#      "sudo systemctl start mariadb",
-#      "sudo systemctl enable mariadb",
-#      "echo $'\nY\npassword\npassword\nY\nY\nY\nY\n' | sudo mysql_secure_installation",
-#      "sudo mysql -u root -pChangChang@1 -e 'CREATE DATABASE usertestdb;'",
       "sudo yum clean all",
-      "sudo mkdir /opt/app",
-      "sudo mkdir /var/log/apps",
-      "sudo chown -R ec2-user:ec2-user /opt/app",
-      "sudo chown -R ec2-user:ec2-user /var/log/apps",
-      "sudo chown -R $USER:$USER /etc/systemd/system",
+      "curl -O https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm",
+      "sudo rpm -U ./amazon-cloudwatch-agent.rpm",
+      "sudo touch /opt/cloudwatch-config.json",
+      "sudo chown ec2-user:ec2-user /opt/cloudwatch-config.json",
+      "sudo chmod 644 /opt/cloudwatch-config.json",
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/cloudwatch-config.json -s"
     ]
   }
 
-  provisioner "file" {
-    source      = "/tmp/ProductManager-0.0.1-SNAPSHOT.jar"
-    destination = "/opt/app/ProductManager-0.0.1-SNAPSHOT.jar"
-  }
-
-  provisioner "file" {
-    source      = "./scripts/ProductManager.service"
-    destination = "/etc/systemd/system/ProductManager.service"
-  }
-
-  #systemd setup
-  provisioner "shell" {
-    environment_vars = [
-      "DEBIAN_FRONTEND=noninteractive",
-      "CHECKPOINT_DISABLE=1"
-    ]
-
-    inline = [
-#      "sudo chown -R ec2-user:ec2-user /opt/app",
-      "sudo chmod -R 555 /opt/app",
-      "sudo systemctl daemon-reload",
-      "sudo systemctl enable ProductManager.service"
-    ]
-  }
+#  provisioner "file" {
+#    source      = "./ProductManager.jar"
+#    destination = "/tmp/ProductManager.jar"
+#  }
+#
+#  provisioner "file" {
+#    source      = "./scripts/ProductManager.service"
+#    destination = "/tmp/ProductManager.service"
+#  }
+#
+#  #systemd setup
+#  provisioner "shell" {
+#    environment_vars = [
+#      "DEBIAN_FRONTEND=noninteractive",
+#      "CHECKPOINT_DISABLE=1"
+#    ]
+#
+#    inline = [
+#      "sudo mkdir /opt/app",
+#      "sudo mkdir /var/log/apps",
+#      "sudo mv /tmp/ProductManager.jar /opt/app/",
+#      "sudo mv /tmp/ProductManager.service /etc/systemd/system/",
+#      "sudo systemctl daemon-reload",
+#      "sudo systemctl enable ProductManager.service"
+#    ]
+#  }
 
   post-processor "manifest" {
     output     = "manifest.json"

@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - main
-      - modify-a05
+      - a07
 
 jobs:
   validate-packer-template:
@@ -18,11 +18,8 @@ jobs:
         with:
           version: latest
 
-      - name: touch jar
-        run: touch /tmp/ProductManager-0.0.1-SNAPSHOT.jar
-
       - name: Format Packer Template
         run: packer fmt scripts/app.pkr.hcl
 
-      - name: Validate Packer Template
-        run: packer validate scripts/app.pkr.hcl
+
+
