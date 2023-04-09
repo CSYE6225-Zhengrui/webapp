@@ -62,22 +62,29 @@ build {
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "shell" {
+    inline = [
+      "sudo mkdir -p /opt"
+    ]
+  }
+
+  provisioner "file" {
+    source      = "./scripts/cloudwatch-config.json"
+    destination = "/tmp/cloudwatch-config.json"
+  }
+
+  provisioner "shell" {
     environment_vars = [
       "DEBIAN_FRONTEND=noninteractive",
       "CHECKPOINT_DISABLE=1"
     ]
 
-
     inline = [
       "sudo yum update -y",
       "yes | sudo yum install java-1.8.0-openjdk",
-#      "yes | sudo yum install maven",
-#      "sudo yum install -y mariadb-server",
-#      "sudo systemctl start mariadb",
-#      "sudo systemctl enable mariadb",
-#      "echo $'\nY\npassword\npassword\nY\nY\nY\nY\n' | sudo mysql_secure_installation",
-#      "sudo mysql -u root -pChangChang@1 -e 'CREATE DATABASE usertestdb;'",
       "sudo yum clean all",
+      "curl -O https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm",
+      "sudo rpm -U ./amazon-cloudwatch-agent.rpm",
+      "sudo mv /tmp/cloudwatch-config.json /opt/",
       "sudo mkdir /opt/app",
       "sudo mkdir /var/log/apps",
       "sudo chown -R ec2-user:ec2-user /opt/app",
@@ -87,8 +94,8 @@ build {
   }
 
   provisioner "file" {
-    source      = "/tmp/ProductManager-0.0.1-SNAPSHOT.jar"
-    destination = "/opt/app/ProductManager-0.0.1-SNAPSHOT.jar"
+    source      = "./target/webapp-0.0.1-SNAPSHOT.jar"
+    destination = "/opt/app/webapp-0.0.1-SNAPSHOT.jar"
   }
 
   provisioner "file" {
@@ -104,8 +111,7 @@ build {
     ]
 
     inline = [
-#      "sudo chown -R ec2-user:ec2-user /opt/app",
-      "sudo chmod -R 555 /opt/app",
+      "sudo chmod -R 755 /opt/app",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable ProductManager.service"
     ]
